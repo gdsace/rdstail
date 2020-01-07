@@ -67,7 +67,8 @@ func watch(c *cli.Context) error {
 		return nil
 	}, stop)
 
-	fie(err)
+	defer fie(err)
+	return nil
 }
 
 func papertrail(c *cli.Context) error {
@@ -76,14 +77,16 @@ func papertrail(c *cli.Context) error {
 	rate := parseRate(c)
 	papertrailHost := c.String("papertrail")
 	if papertrailHost == "" {
-		fie(errors.New("-papertrail required"))
+		defer fie(errors.New("-papertrail required"))
+		return nil
 	}
 	appName := c.String("app")
 	hostname := c.String("hostname")
 	if hostname == "os.Hostname()" {
 		var err error
 		hostname, err = os.Hostname()
-		fie(err)
+		defer fie(err)
+		return nil
 	}
 
 	stop := make(chan struct{})
@@ -91,7 +94,8 @@ func papertrail(c *cli.Context) error {
 
 	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
 
-	fie(err)
+	defer fie(err)
+	return nil
 }
 
 func tail(c *cli.Context) error {
@@ -99,7 +103,8 @@ func tail(c *cli.Context) error {
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
 	err := rdstail.Tail(r, db, numLines)
-	fie(err)
+	defer fie(err)
+	return nil
 }
 
 func main() {
