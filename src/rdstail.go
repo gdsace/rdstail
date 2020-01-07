@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -104,7 +105,10 @@ func tailLogFile(r *rds.RDS, db, name string, numLines int64, marker string) (st
 		marker = *markerPtr
 	}
 
-	return buf.String(), marker, err
+	re1 := regexp.MustCompile(`[\n\t]+`)
+	re2 := regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
+
+	return re2.ReplaceAllString(re1.ReplaceAllLiteralString(buf.String(), " "), "\n$1"), marker, err
 }
 
 /// cmds
