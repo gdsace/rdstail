@@ -105,10 +105,11 @@ func tailLogFile(r *rds.RDS, db, name string, numLines int64, marker string) (st
 		marker = *markerPtr
 	}
 
-	re1 := regexp.MustCompile(`[\n\t]+`)
+	re1 := regexp.MustCompile(`\s+`)
 	re2 := regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
+	re3 := regexp.MustCompile(`\s+$`)
 
-	return re2.ReplaceAllString(re1.ReplaceAllLiteralString(buf.String(), " "), "\n$1"), marker, err
+	return re3.ReplaceAllLiteralString(re2.ReplaceAllString(re1.ReplaceAllLiteralString(buf.String(), " "), "\n$1"), "\n"), marker, err
 }
 
 /// cmds
