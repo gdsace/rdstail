@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"github.com/gdsace/rdstail/src"
 )
 
@@ -111,17 +111,17 @@ func main() {
     AWS credentials are taken from an ~/.aws/credentials file or the env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.`
 	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "instance, i",
 			Usage: "name of the db instance in rds [required]",
 		},
-		cli.StringFlag{
-			Name:   "region",
-			Value:  "us-east-1",
-			Usage:  "AWS region",
-			EnvVar: "AWS_REGION",
+		&cli.StringFlag{
+			Name:    "region",
+			Value:   "us-east-1",
+			Usage:   "AWS region",
+			EnvVars: []string{"AWS_REGION"},
 		},
-		cli.IntFlag{
+		&cli.IntFlag{
 			Name:  "max-retries",
 			Value: 10,
 			Usage: "maximium number of retries for rds requests",
@@ -134,22 +134,22 @@ func main() {
 			Usage:  "stream logs into papertrail",
 			Action: papertrail,
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "papertrail, p",
 					Value: "",
 					Usage: "papertrail host e.g. logs.papertrailapp.com:8888 [required]",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "app, a",
 					Value: "rdstail",
 					Usage: "app name to send to papertrail",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "hostname",
 					Value: "os.Hostname()",
 					Usage: "hostname of the client, sent to papertrail",
 				},
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "rate, r",
 					Value: "3s",
 					Usage: "rds log polling rate",
@@ -162,7 +162,7 @@ func main() {
 			Usage:  "stream logs to stdout",
 			Action: watch,
 			Flags: []cli.Flag{
-				cli.StringFlag{
+				&cli.StringFlag{
 					Name:  "rate, r",
 					Value: "3s",
 					Usage: "rds log polling rate",
@@ -175,7 +175,7 @@ func main() {
 			Usage:  "tail the last N lines",
 			Action: tail,
 			Flags: []cli.Flag{
-				cli.IntFlag{
+				&cli.IntFlag{
 					Name:  "lines, n",
 					Value: 20,
 					Usage: "output the last n lines. use 0 for a full dump of the most recent file",
