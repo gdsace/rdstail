@@ -54,7 +54,7 @@ func parseDB(c *cli.Context) string {
 	return db
 }
 
-func watch(c *cli.Context) {
+func watch(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
@@ -70,7 +70,7 @@ func watch(c *cli.Context) {
 	fie(err)
 }
 
-func papertrail(c *cli.Context) {
+func papertrail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
@@ -94,7 +94,7 @@ func papertrail(c *cli.Context) {
 	fie(err)
 }
 
-func tail(c *cli.Context) {
+func tail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
@@ -128,7 +128,7 @@ func main() {
 		},
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:   "papertrail",
 			Usage:  "stream logs into papertrail",
