@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/urfave/cli/tree/v1.22.2"
+	"github.com/urfave/cli"
 	"github.com/gdsace/rdstail/src"
 )
 
@@ -34,8 +34,8 @@ func signalListen(stop chan<- struct{}) {
 }
 
 func setupRDS(c *cli.Context) *rds.RDS {
-	region := c.GlobalString("region")
-	maxRetries := c.GlobalInt("max-retries")
+	region := c.String("region")
+	maxRetries := c.Int("max-retries")
 	cfg := aws.NewConfig().WithRegion(region).WithMaxRetries(maxRetries)
 	return rds.New(session.New(), cfg)
 }
@@ -47,7 +47,7 @@ func parseRate(c *cli.Context) time.Duration {
 }
 
 func parseDB(c *cli.Context) string {
-	db := c.GlobalString("instance")
+	db := c.String("instance")
 	if db == "" {
 		fie(errors.New("-instance required"))
 	}
