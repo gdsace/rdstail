@@ -117,7 +117,8 @@ func main() {
 	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:  "instance, i",
+			Name:  "instance",
+			Aliases: []string{"i"},
 			Usage: "name of the db instance in rds [required]",
 		},
 		&cli.StringFlag{
@@ -140,12 +141,14 @@ func main() {
 			Action: papertrail,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:  "papertrail, p",
+					Name:  "papertrail",
+					Aliases: []string{"p"},
 					Value: "",
 					Usage: "papertrail host e.g. logs.papertrailapp.com:8888 [required]",
 				},
 				&cli.StringFlag{
-					Name:  "app, a",
+					Name:  "app",
+					Aliases: []string{"a"},
 					Value: "rdstail",
 					Usage: "app name to send to papertrail",
 				},
@@ -155,7 +158,8 @@ func main() {
 					Usage: "hostname of the client, sent to papertrail",
 				},
 				&cli.StringFlag{
-					Name:  "rate, r",
+					Name:  "rate",
+					Aliases: []string{"r"},
 					Value: "3s",
 					Usage: "rds log polling rate",
 				},
@@ -168,7 +172,8 @@ func main() {
 			Action: watch,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
-					Name:  "rate, r",
+					Name:  "rate",
+					Aliases: []string{"r"},
 					Value: "3s",
 					Usage: "rds log polling rate",
 				},
@@ -181,7 +186,8 @@ func main() {
 			Action: tail,
 			Flags: []cli.Flag{
 				&cli.IntFlag{
-					Name:  "lines, n",
+					Name:  "lines",
+					Aliases: []string{"n"},
 					Value: 20,
 					Usage: "output the last n lines. use 0 for a full dump of the most recent file",
 				},
