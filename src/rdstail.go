@@ -197,7 +197,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, prefixPattern string, call
 	return nil
 }
 
-func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app, hostname string, stop <-chan struct{}) error {
+func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app, hostname string, prefixPattern string, stop <-chan struct{}) error {
 	nameSegment := fmt.Sprintf(" %s %s: ", hostname, app)
 
 	// Establish TLS connection with papertrail
@@ -217,7 +217,7 @@ func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, a
 
 	// watch with callback writing to the connection
 	buf := bytes.Buffer{}
-	return Watch(r, db, rate, func(lines string) error {
+	return Watch(r, db, rate, prefixPattern, func(lines string) error {
 		timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
 		buf.Reset()
 		buf.WriteString(timestamp)

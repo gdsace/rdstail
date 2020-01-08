@@ -77,6 +77,7 @@ func papertrail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
+	prefixPattern := c.String("prefix")
 	papertrailHost := c.String("papertrail")
 	if papertrailHost == "" {
 		defer fie(errors.New("-papertrail required"))
@@ -94,7 +95,7 @@ func papertrail(c *cli.Context) error {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
+	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, prefixPattern, stop)
 
 	defer fie(err)
 	return nil
