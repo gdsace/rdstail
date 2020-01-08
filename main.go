@@ -127,9 +127,9 @@ func main() {
 		},
 		&cli.StringFlag{
 			Name:    "prefix",
-			Aliases: []string{"p"}
+			Aliases: []string{"p"},
 			Value:   "",
-			Prefix:  "Prefix regexp pattern to detect when a new log line begins"
+			Prefix:  "Prefix regexp pattern to detect when a new log line begins",
 		},
 		&cli.StringFlag{
 			Name:    "region",
