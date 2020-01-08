@@ -76,7 +76,7 @@ func describeLogFiles(r *rds.RDS, db string, since int64) (details []*rds.Descri
 	return
 }
 
-func tailLogFile(r *rds.RDS, db, name string, numLines int64, marker string) (string, string, error) {
+func tailLogFile(r *rds.RDS, db, name string, numLines int64, marker string, prefixPattern string) (string, string, error) {
 	req := &rds.DownloadDBLogFilePortionInput{
 		DBInstanceIdentifier: aws.String(db),
 		LogFileName:          aws.String(name),
@@ -105,16 +105,25 @@ func tailLogFile(r *rds.RDS, db, name string, numLines int64, marker string) (st
 		marker = *markerPtr
 	}
 
-	re1 := regexp.MustCompile(`\s+`)
-	re2 := regexp.MustCompile(`(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
-	re3 := regexp.MustCompile(`\s+$`)
+	output := buf.String()
+	if len(prefixPattern) > 0 {
+		re1 := regexp.MustCompile(`\s+`)
+		re2 := regexp.MustCompile(fmt.Sprintf(`(%s)`, prefixPattern))
+		re3 := regexp.MustCompile(`\s+$`)
 
-	return re3.ReplaceAllLiteralString(re2.ReplaceAllString(re1.ReplaceAllLiteralString(buf.String(), " "), "\n$1"), "\n"), marker, err
+		if re2.MatchString(output) {
+			output = re1.ReplaceAllLiteralString(output, " ")
+			output = re2.ReplaceAllString(output, "\n$1")
+			output = re3.ReplaceAllLiteralString(output, "\n")
+		}
+	}
+
+	return output, marker, err
 }
 
 /// cmds
 
-func Tail(r *rds.RDS, db string, numLines int64) error {
+func Tail(r *rds.RDS, db string, numLines int64, prefixPattern string) error {
 	logFile, err := getMostRecentLogFile(r, db)
 	if err != nil {
 		return nil
@@ -123,7 +132,7 @@ func Tail(r *rds.RDS, db string, numLines int64) error {
 		return errors.New("no log file found")
 	}
 
-	tail, _, err := tailLogFile(r, db, *logFile.LogFileName, numLines, "")
+	tail, _, err := tailLogFile(r, db, *logFile.LogFileName, numLines, "", prefixPattern)
 	if err != nil {
 		return err
 	}
@@ -131,7 +140,7 @@ func Tail(r *rds.RDS, db string, numLines int64) error {
 	return nil
 }
 
-func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) error, stop <-chan struct{}) error {
+func Watch(r *rds.RDS, db string, rate time.Duration, prefixPattern string, callback func(string) error, stop <-chan struct{}) error {
 	// Periodically check for new log files (unless there is a way to detect the file is done being written to)
 	// Poll that log file, retaining the marker
 	logFile, err := getMostRecentLogFile(r, db)
@@ -143,7 +152,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 	}
 
 	// Get a marker for the end of the log file by requesting the most recent line
-	lines, marker, err := tailLogFile(r, db, *logFile.LogFileName, 1, "")
+	lines, marker, err := tailLogFile(r, db, *logFile.LogFileName, 1, "", prefixPattern)
 	if err != nil {
 		return err
 	}
@@ -167,7 +176,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				}
 			}
 
-			lines, marker, err = tailLogFile(r, db, *logFile.LogFileName, 0, marker)
+			lines, marker, err = tailLogFile(r, db, *logFile.LogFileName, 0, marker, prefixPattern)
 			if err != nil {
 				return err
 			}

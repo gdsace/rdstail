@@ -58,11 +58,13 @@ func watch(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
+	prefixPattern := c.String("prefix")
+	fmt.Println(prefixPattern)
 
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.Watch(r, db, rate, func(lines string) error {
+	err := rdstail.Watch(r, db, rate, prefixPattern, func(lines string) error {
 		fmt.Print(lines)
 		return nil
 	}, stop)
@@ -102,7 +104,8 @@ func tail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
-	err := rdstail.Tail(r, db, numLines)
+	prefixPattern := c.String("prefix")
+	err := rdstail.Tail(r, db, numLines, prefixPattern)
 	defer fie(err)
 	return nil
 }
@@ -117,9 +120,15 @@ func main() {
 	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:  "instance",
+			Name:    "instance",
 			Aliases: []string{"i"},
-			Usage: "name of the db instance in rds [required]",
+			Usage:   "Name of the db instance in RDS [required]",
+		},
+		&cli.StringFlag{
+			Name:    "prefix",
+			Aliases: []string{"p"}
+			Value:   "",
+			Prefix:  "Prefix regexp pattern to detect when a new log line begins"
 		},
 		&cli.StringFlag{
 			Name:    "region",
@@ -130,7 +139,7 @@ func main() {
 		&cli.IntFlag{
 			Name:  "max-retries",
 			Value: 10,
-			Usage: "maximium number of retries for rds requests",
+			Usage: "Maximium number of retries for RDS requests",
 		},
 	}
 
@@ -144,24 +153,24 @@ func main() {
 					Name:  "papertrail",
 					Aliases: []string{"p"},
 					Value: "",
-					Usage: "papertrail host e.g. logs.papertrailapp.com:8888 [required]",
+					Usage: "Papertrail host e.g. logs.papertrailapp.com:8888 [required]",
 				},
 				&cli.StringFlag{
 					Name:  "app",
 					Aliases: []string{"a"},
 					Value: "rdstail",
-					Usage: "app name to send to papertrail",
+					Usage: "App name to send to papertrail",
 				},
 				&cli.StringFlag{
 					Name:  "hostname",
 					Value: "os.Hostname()",
-					Usage: "hostname of the client, sent to papertrail",
+					Usage: "Gostname of the client, sent to papertrail",
 				},
 				&cli.StringFlag{
 					Name:  "rate",
 					Aliases: []string{"r"},
 					Value: "3s",
-					Usage: "rds log polling rate",
+					Usage: "RDS log polling rate",
 				},
 			},
 		},
@@ -175,7 +184,7 @@ func main() {
 					Name:  "rate",
 					Aliases: []string{"r"},
 					Value: "3s",
-					Usage: "rds log polling rate",
+					Usage: "RDS log polling rate",
 				},
 			},
 		},
@@ -189,7 +198,7 @@ func main() {
 					Name:  "lines",
 					Aliases: []string{"n"},
 					Value: 20,
-					Usage: "output the last n lines. use 0 for a full dump of the most recent file",
+					Usage: "Output the last n lines. use 0 for a full dump of the most recent file",
 				},
 			},
 		},
