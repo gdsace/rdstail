@@ -59,7 +59,6 @@ func watch(c *cli.Context) error {
 	db := parseDB(c)
 	rate := parseRate(c)
 	prefixPattern := c.String("prefix")
-	fmt.Println(prefixPattern)
 
 	stop := make(chan struct{})
 	go signalListen(stop)
